@@ -1,2 +1,2 @@
-# SearchScool-4
+# SearchSchool-4
 In this course you will go through basics of Elasticsearch and Elastic Stack (Kibana, Logstash, Beats). You will learn how to index, search and retrieve data, how to prepare the data for text analysis and how to implement complicated hierarchy of entitles inside Elasticsearch.  You will learn specific terms used in search industry. Learn about use cases for using Elasticsearch. You will get a chance to validate your progress by passing in modules tests and completing practical tasks which will be checked by your mentor.  This experience will let you grow as an engineer and give a possibility to work in exciting and complicated projects.
