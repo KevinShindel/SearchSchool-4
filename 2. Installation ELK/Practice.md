@@ -107,6 +107,7 @@ POST /kibana_sample_data_ecommerce/_search
 
 
 ### Data analytics task (Flightsdata)
+
 - Total distance in miles travelled by all flights
 ````text
 POST /kibana_sample_data_flights/_search
@@ -212,9 +213,51 @@ POST /kibana_sample_data_flights/_search
 ````
 - What is sum of all RAM for Windows machines that have requests from 6am to 12pm
 ````text
+{
+    "size": 0,
+    "query": {
+        "constant_score": {
+            "filter": {
+                "bool": {
+                    "must": [{
+                        "script": {
+                            "script": {
+                                "source": "doc['timestamp'].value.getHour() >= params.min && doc['timestamp'].value.getHour() <= params.max",
+                                "params": {
+                                    "min": 6,
+                                    "max": 24
+                                    }
+                                }
 
+                            }
+                        },
+                        {
+                            "wildcard": {
+                                 "machine.os":{"value": "win*"}
+                                }
+                            }
+                        ]
+                }
+            }
+        }
+    },
+    "aggs": {
+        "total_RAM": {
+            "sum": {
+                "field": "machine.ram"
+               }
+           }
+        }
+}
 ````
 - Find total number of logs with IP in range from 176.0.0.0 to 179.255.255.254
 ````text
-
+{
+    "size": 0,
+    "query": {
+        "term": {
+            "clientip": "176.0.0.0/6"
+        }
+    }
+}
 ````
