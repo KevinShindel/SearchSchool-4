@@ -177,7 +177,7 @@ GET idx1/_analyze
 
 
 ## Aggregation
-````text
+```text
 {
     "size": 0,
     "aggs": {
@@ -189,9 +189,9 @@ GET idx1/_analyze
     },
     "sort": { "SORTING_FIELD_NAME": {"order": "asc"} }
 }
-````
-
-````text
+```
+### Aggregation with grouping by [state.keyword] field
+```text
 POST bank/account/_search
 {
   "size": 0,
@@ -203,4 +203,210 @@ POST bank/account/_search
     }
   }
 }
+```
+### Group by [state.keyword] and calculate average [balance] 
+```text
+GET bank/account/_search
+{
+  "size": 0,
+  "aggs": {
+    "states": {
+      "terms": {
+        "field": "state.keyword"
+      },
+      "aggs": {
+        "avg_bal": {
+          "avg": {
+            "field": "balance"
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+### Show stats 
+````text
+{
+  "size": 0,
+  "aggs": {
+    "balance-stats": {
+      "stats": {
+        "field": "balance"
+      }
+    }
+  }
+}
 ````
+
+### Filtering and Aggregation ( count only CA states )
+````text
+{
+  "size": 0,
+  "query": {
+    "match": {
+      "state.keyword": "CA"
+    }
+  },
+  "aggs": {
+    "states": {
+      "terms": {
+        "field": "state.keyword"
+      }
+    }
+  }
+}
+````
+
+### Aggregation with mulltiple filtration
+````text
+{
+  "size": 0,
+  "query": {
+      "bool": {
+          "must": [
+            {"match": { "state.keyword": "CA" }},
+            {"range": {"age":{"lte": 25}}}
+          ]
+      }
+    
+  },
+  "aggs": {
+    "states": {
+      "terms": {
+        "field": "state.keyword"
+      }
+    }
+  }
+}
+````
+
+### Filter by state then filter by age and group by
+````text
+{
+  "size": 0,
+  "query": {
+    "match": {"state.keyword": "CA"}
+  },
+  "aggs": {
+    "over35":{
+      "filter": {
+        "range": {"age": {"gt": 35}}
+      },
+    "aggs": {"avg_bal": {"avg": {"field": "balance"} }}
+    }
+  }
+}
+````
+
+### Look at state avg and global average
+````text
+GET bank/account/_search
+{
+  "size": 0,
+  "aggs": {
+    "state_avg": {
+      "terms": {
+        "field": "state.keyword"
+      },
+      "aggs": {"avg_bal": {"avg": {"field": "balance"}}}
+    },
+    "global_avg": {
+      "global": {},
+      "aggs": {"avg_bal": {"avg": {"field": "balance"}}}
+    }
+  }
+}
+````
+
+### Look at the percentiles for the balances
+````text
+GET bank/account/_search
+{
+  "size": 0,
+  "aggs": {
+    "pct_balances": {
+      "percentiles": {
+        "field": "balance",
+        "percents": [
+          1,
+          5,
+          25,
+          50,
+          75,
+          95,
+          99
+        ]
+      }
+    }
+  }
+}
+````
+
+
+### Can also calculate High Dynamic Range (HDR) Historgram
+
+````text
+GET bank/account/_search
+{
+  "size": 0,
+  "aggs": {
+    "pct_balances": {
+      "percentiles": {
+        "field": "balance",
+        "percents": [
+          1,
+          5,
+          25,
+          50,
+          75,
+          95,
+          99
+        ],
+        "hdr": {
+          "number_of_significant_value_digits": 3
+        }
+      }
+    }
+  }
+}
+````
+
+
+### We can use the percentile ranks agg for checking a individual values
+````text
+GET bank/account/_search
+{
+  "size": 0,
+  "aggs": {
+    "bal_outlier": {
+      "percentile_ranks": {
+        "field": "balance",
+        "values": [35000,50000],
+        "hdr": {
+          "number_of_significant_value_digits": 3
+        }
+      }
+    }
+  }
+}
+````
+
+
+### Similarly we can create a histogram
+````text
+GET bank/account/_search
+{
+  "size": 0,
+  "aggs": {
+    "bals": {
+      "histogram": {
+        "field": "balance",
+        "interval": 500
+      }
+    }
+  }
+}
+````
+
