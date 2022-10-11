@@ -1,0 +1,27 @@
+version: "3.3"
+services:
+  elasticsearch:
+    image: elasticsearch:7.16.3
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+        - http.host=0.0.0.0
+        - transport.host=0.0.0.0
+        - "ES_JAVA_OPTS=-Xms1g -Xmx1g "
+        - cluster.name=elk-docker-cluster
+        - node.name=elk-docker-single-node
+        - http.cors.enabled=true
+        - http.cors.allow-origin=*
+        - xpack.ml.enabled=false
+        - discovery.type=single-node
+
+  kibana:
+    image: kibana:7.16.3
+    depends_on:
+    - elasticsearch
+    restart: on-failure
+    links:
+    - elasticsearch
+    ports:
+      - "5601:5601"
