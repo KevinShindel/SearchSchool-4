@@ -1,4 +1,6 @@
 import os
+import time
+
 from dotenv import find_dotenv, load_dotenv
 
 load_dotenv(find_dotenv())
@@ -13,3 +15,15 @@ TEST_DOC = {'access_code': '12se74',
             'department': 'Sales',
             'location': 'Manchester',
             'created': '2022-10-11T20:24:30.586918'}
+
+
+def time_wrapper(*args, **kwargs):
+    def wrapper(fn):
+        start = time.perf_counter()
+        result = fn(*args, **kwargs)
+        end = time.perf_counter()
+        elapsed = round(end - start, 3)
+        print(f'Ended at: {elapsed} sec.')
+        return result
+    return wrapper
+
