@@ -34,7 +34,6 @@ services:
     - elasticsearch
     ports:
       - "5601:5601"
-
 ````
 ### ENV FILE 
 ````yaml
@@ -43,13 +42,14 @@ ELASTIC_SEARCH_API_ENDPOINT=http://localhost:9200
 ````
 
 ### COMMON FILE EXAMPLE
+
 ````python
 import os
 from dotenv import find_dotenv, load_dotenv
 
 load_dotenv(find_dotenv())
 
-FILE = os.getenv('FILE', 'access-code-password-recovery-code.csv')
+FILE = os.getenv('FILE', 'src/access-code-password-recovery-code.csv')
 ELASTIC_SEARCH_API_ENDPOINT = os.getenv('ELASTIC_SEARCH_API_ENDPOINT', 'http://localhost:9200')
 
 TEST_DOC = {'access_code': '12se74',
@@ -62,6 +62,7 @@ TEST_DOC = {'access_code': '12se74',
 
 ````
 ### MAIN FILE EXAMPLE
+
 ````python
 from csv import DictReader
 from typing import Iterable
@@ -125,7 +126,7 @@ def main():
     data = _get_data(FILE)  # get iterated data from csv file
     created, _ = bulk(client=api, index=index, actions=data)  # bulk creation from file
     document = api.get(index=index, id='901242')  # Get created document
-    assert document.body['_source'] == TEST_DOC   # Check created document with tested
+    assert document.body['_source'] == TEST_DOC  # Check created document with tested
     queryset = api.search(index=index)  # Get all created documents
     assert queryset.body['hits']['total']['value'] is created  # check quantity len
     api.indices.delete(index=index)  # Drop index with documents
