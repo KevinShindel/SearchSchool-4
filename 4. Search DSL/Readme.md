@@ -9,74 +9,26 @@
 
 #### THE ENVELOPE
 
-````json
+````text
 {
-  "query": {
-    <--
-    The
-    queries
-    go
-    to
-    the
-    "query"
-    section.
-    "match_all": {}
-    <--
-    The
-    query
-    definition
+  "query": { <-- The queries go to the "query" section.
+    "match_all": {} <-- The query definition
   },
-  "aggs": {
-    <--
-    The
-    aggregations
-    go
-    to
-    "aggs"
-    (or
-    "aggregations"
-    )
-    section
-    "allTypes": {
-      <--
-      The
-      aggregation
-      name
-      (
-      "
-      allTypes
-      "
-      )
+  "aggs": { <-- The aggregations go to "aggs" (or "aggregations" ) section 
+    "allTypes": { <-- The aggregation name ("allTypes")
       "terms": {
-        "field": "type"
-        <--
-        The
-        aggergation
-        definition
+        "field": "type" <-- The aggergation definition
       }
     }
   },
-  "size": 10
-  <--
-  The
-  max
-  response
-  size
-  that
-  should
-  be
-  returned
+  "size": 10 <-- The max response size that should be returned
 }
 ````
 
-````json
+````text
 {
   "query": {
-    "match_all": {}
-    <--
-    Matches
-    all
-    documents
+    "match_all": {} <-- Matches all documents 
   }
 }
 ````
@@ -114,17 +66,9 @@ Term — the tokenized piece of text associated with the field name it belongs t
 "laptop" is the value).
 ````
 
-````json
+````text
 {
-  "text": "quick brown fox"
-  <---
-  Find
-  inclusion
-  quick
-  |
-  brown
-  |
-  fox
+  "text": "quick brown fox" <--- Find inclusion quick | brown  | fox 
 }
 ````
 
