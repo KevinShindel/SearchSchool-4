@@ -29,7 +29,6 @@ Number of requests with some value of memory field and Firefox based agent
 ## Solution
 
 ### How many customers from Birmingham which bought products that costs up to 100$?
-
 ````text
 POST /kibana_sample_data_ecommerce/_search
 {"size": 0, 
@@ -47,7 +46,6 @@ POST /kibana_sample_data_ecommerce/_search
   }
 }
 ````
-
 ````json
 {
   "took" : 1,
@@ -70,12 +68,60 @@ POST /kibana_sample_data_ecommerce/_search
 ````
 
 ### How many purchases have double E or double B in their customer’s names?
+````text
+POST kibana_sample_data_ecommerce/_search
+{
+  "size": 0, 
+  "query": {
+    "bool": {
+      "should": [
+        {"wildcard": { "customer_full_name": { "value": "*BB*" }}},
+        {"wildcard": { "customer_full_name": { "value": "*EE*" }}}
+      ]
+    }
+  }
+}
+````
+````json
+{
+  "took" : 2,
+  "timed_out" : false,
+  "_shards" : {
+    "total" : 1,
+    "successful" : 1,
+    "skipped" : 0,
+    "failed" : 0
+  },
+  "hits" : {
+    "total" : {
+      "value" : 468,
+      "relation" : "eq"
+    },
+    "max_score" : null,
+    "hits" : [ ]
+  }
+}
+````
 
 ### How many purchases contains only 1 manufacturer, even though there are multiple purchases?
+`````text
+POST kibana_sample_data_ecommerce/_search
+{
+    "size": 0,
+    "aggs": {
+      "products_cnt": {
+        "terms": {
+          "field": "products"
+        }
+      }
+    }
+}
+`````
+````json
 
+````
 
 ### Number of flights with less than 1000 miles distance
-
 ````text
 POST kibana_sample_data_flights/_search
 {
@@ -90,7 +136,6 @@ POST kibana_sample_data_flights/_search
   }
 }
 ````
-
 ````json
 {
   "took" : 1,
@@ -110,7 +155,6 @@ POST kibana_sample_data_flights/_search
     "hits" : [ ]
   }
 }
-
 ````
 
 ### How many flights that do not fly to International airport with Clear and Sunny weather
@@ -133,7 +177,6 @@ POST kibana_sample_data_flights/_search
     }
 }
 ````
-
 ````json
 {
   "took" : 7,
@@ -153,7 +196,6 @@ POST kibana_sample_data_flights/_search
     "hits" : [ ]
   }
 }
-
 ````
 
 ### How many flights were delayed by at least an hour on Monday?
@@ -274,7 +316,6 @@ POST kibana_sample_data_logs/_search
 ````
 
 ### Number of requests with some value of memory field and Firefox based agent
-
 ````text
 POST kibana_sample_data_logs/_search
 {
@@ -293,7 +334,6 @@ POST kibana_sample_data_logs/_search
     }
 }
 ````
-
 ````json
 {
   "took" : 1,
