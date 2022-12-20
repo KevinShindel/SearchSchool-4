@@ -150,7 +150,7 @@ def upload():
 
 ### Search Console implementation
 ````python
-import sys
+import sys, os
 from typing import List
 
 from elasticsearch import Elasticsearch
@@ -247,8 +247,39 @@ if __name__ == '__main__':
 <a href='https://postimages.org/' target='_blank'><img src='https://i.postimg.cc/qMBxqzRg/data.jpg' border='0' alt='data'/></a>
 
 1. Search by match phrase
+````text
+POST /movie-csv/_search
+````
 ````json
-
+{
+  "size": 0,
+    "query": {
+    "match": {
+      "title": "Star Wars"
+    }
+    },
+  "aggs": {
+    "by_movie_id": {
+      "terms": {
+        "field": "movieId"
+      },
+      "aggs": {
+        "nested_rating_agg": {
+          "nested": {
+            "path": "rating"
+          },
+          "aggs": {
+            "avg_rating": {
+              "avg": {
+                "field": "rating.value"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
 ````
 2. Sort by aggregated field
 ````text
@@ -329,11 +360,7 @@ POST /movie-csv/_search
             "field": "rating.value"
           }
         }
-      }, "filter": {
-         "range": { "avg_rating": {
-        "gte": 3
-    }}
-      }
+      }, "over_rating": {"filter": {"range": { "avg_rating": {"gte": 3}}}}
     }
   }
 }

@@ -1,0 +1,8 @@
+cluster.name: "elk-docker-cluster"
+node.name: "elk-docker-single-node"
+network.host: 0.0.0.0
+
+http.cors.enabled: true
+http.cors.allow-origin: "*"
+xpack.ml.enabled: false
+discovery.type: single-node
