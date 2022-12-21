@@ -6,139 +6,135 @@ Index each separate event into Elasticsearch into index based on current hour.
 Let pipeline work with saving data for the last 7 days
 Add any extra info to the events
 
+
+
+# Task list
+
+1. Investigate HTTP Request
+2. Create Logstash configuration
+3. Create Dockerfile
+4. Create Docker Compose file
+5. Run Docker 
+6. Check Kibana for result
+
 # Solution
 
-# TODO: Create docker container with Logstash + Kibana + ElasticSearch
-1. Investigate Logstash HTTP client
-2. Create schema for retrieve data to Logstash
-3. Create link Logstash + Kibana + ElasticSearch
+1. Check for HTTP data
+<a href='https://postimages.org/' target='_blank'><img src='https://i.postimg.cc/mgcKVZsS/1.jpg' border='0' height="250px" alt='1'/></a>
 
-### Create logstash configuration and save as  http-pipeline.conf
-
-`````text
+2. Logstash config file
+````text
 input {
- http {
-    host => "https://api2.binance.com/api/v3/ticker/24hr"
-    port => "443"
+   pipe {
+    command => 'curl "https://api2.binance.com/api/v3/ticker/24hr"' # get data from HTTP 
+    codec => "json" # use json codec
   }
 }
 
 
 filter {
+
     json {
-        source => "message"    
+        source => "message"
+    }
+
+     mutate {
+        remove_field => [ "command", "host" ] # remove command and host fields
+        convert => { # convert text fields into float
+          "bidQty" => "float"
+          "volume" => "float"
+          "priceChangePercent" => "float"
+          "quoteVolume" => "float"
+          "prevClosePrice" => "float"
+          "highPrice" => "float"
+          "lowPrice" => "float"
+          "lastPrice" => "float"
+          "askQty" => "float"
+          "askPrice" => "float"
+          "bidPrice" => "float"
+          "openPrice" => "float",
+          "weightedAvgPrice" => "float",
+          "lastQty" => "float"
+        }
+        gsub => [
+          "symbol", ".+USD+.", "USD", # use regex for replace text
+    ]
     }
 }
 
 output {
 
-     stdout { codec => rubydebug }
-    
-     file {
-        path => "/log_streaming/http-pipeline/http-pipeline.log"
-    }
-    
+     stdout { codec => rubydebug } # show up in console
+
     elasticsearch {
-        host => "localhost"
-        index => "binance"
+        hosts => ["elasticsearch:9200"] # output to elasticsearch
+        index => "binance-%{+YYYY.MM.dd-HH}" # create index every hours
     }
 }
-`````
-
-### Example of data
-
-````json
-{
-  "symbol": "ETHBTC",
-  "priceChange": "0.00135200", 
-  "priceChangePercent": "1.907",
-  "weightedAvgPrice": "0.07149529",
-  "prevClosePrice": "0.07089000",
-  "lastPrice": "0.07223400", 
-  "lastQty": "7.63940000", 
-  "bidPrice": "0.07223400",
-  "bidQty": "16.60500000", 
-  "askPrice": "0.07223500",
-  "askQty": "23.44040000",
-  "openPrice": "0.07088200",
-  "highPrice": "0.07235000",
-  "lowPrice": "0.07044700",
-  "volume": "38290.72530000",
-  "quoteVolume": "2737.60634021",
-  "openTime": 1671453765946,
-  "closeTime": 1671540165946, 
-  "firstId": 394731009, 
-  "lastId": 394807597,
-  "count": 76589
-}
 ````
 
-### Create ELK Index
-````text
-PUT /binance
-````
-````json
-{
-  "mappings": {
-    "properties": {
-      "symbol": {"type": "keyword"},
-      "priceChange": {"type": "double"},
-      "priceChangePercent": {"type": "double"},
-      "weightedAvgPrice": {"type": "double"},
-      "prevClosePrice": {"type": "double"},
-      "lastPrice": {"type": "double"},
-      "lastQty": {"type": "double"},
-      "bidPrice": {"type": "double"},
-      "bidQty": {"type": "double"},
-      "askPrice": {"type": "double"},
-      "openPrice": {"type": "double"},
-      "highPrice": {"type": "double"},
-      "lowPrice": {"type": "double"},
-      "volume": {"type": "double"},
-      "quoteVolume": {"type": "double"},
-      "openTime": {"type": "date"},
-      "closeTime": {"type": "date"},
-      "firstId": {"type": "integer"},
-      "lastId": {"type": "double"},
-      "count": {"type": "double"}
-    }
-  }
-}
+3. Dockerfile for Logstash
+````dockerfile
+FROM logstash:6.4.0
+ADD /config/http-pipeline.conf /usr/share/logstash/config
+ADD /config/logstash.yml /usr/share/logstash/config
+CMD logstash -f /usr/share/logstash/config/http-pipeline.conf
 ````
 
-### Test create one record
-````text
-POST binance/_doc/1
-````
-````json
-{
-  "symbol": "ETHBTC",
-  "priceChange": "0.00135200", 
-  "priceChangePercent": "1.907",
-  "weightedAvgPrice": "0.07149529",
-  "prevClosePrice": "0.07089000",
-  "lastPrice": "0.07223400", 
-  "lastQty": "7.63940000", 
-  "bidPrice": "0.07223400",
-  "bidQty": "16.60500000", 
-  "askPrice": "0.07223500",
-  "askQty": "23.44040000",
-  "openPrice": "0.07088200",
-  "highPrice": "0.07235000",
-  "lowPrice": "0.07044700",
-  "volume": "38290.72530000",
-  "quoteVolume": "2737.60634021",
-  "openTime": 1671453765946,
-  "closeTime": 1671540165946, 
-  "firstId": 394731009, 
-  "lastId": 394807597,
-  "count": 76589
-}
+4. DockerCompose file
+````dockerfile
+version: "3.3"
+services:
 
+  logstash:
+    build: .
+    container_name: logstash
+    depends_on:
+      - elasticsearch
+    restart: always
+    environment:
+      LOGSPOUT: ignore
+    ports:
+      - "5000:5000"
+    links:
+      - elasticsearch
+
+  elasticsearch:
+    container_name: elasticsearch
+    image: elasticsearch:6.4.0
+    volumes:
+      - ./elk.conf.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+    environment:
+      LOGSPOUT: ignore
+        - http.host=0.0.0.0
+        - transport.host=0.0.0.0
+        - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+
+  kibana:
+    image: kibana:6.4.0
+    container_name: kibana
+    environment:
+      LOGSPOUT: ignore
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+    links:
+      - elasticsearch
+    ports:
+      - "5601:5601"
 
 ````
 
-### Get created document
-````text
-GET binance/_doc/1
+5. Run docker
+````shell
+docker-compose build
+docker-compose up
 ````
+<a href='https://postimages.org/' target='_blank'><img src='https://i.postimg.cc/zG0Y22bJ/Search-School-4-http-pipeline-conf-2022-12-20-19-36-18.gif' border='0' alt='Search-School-4-http-pipeline-conf-2022-12-20-19-36-18'/></a>
+
+6. Check Kibana
+
+<a href='https://postimg.cc/p9VqKJfR' target='_blank'><img src='https://i.postimg.cc/R0Ky5Pq6/2.jpg' border='0' height="250px" alt='2'/></a>
+<a href='https://postimages.org/' target='_blank'><img src='https://i.postimg.cc/kGBy94w1/3.jpg' border='0' height="400px" alt='3'/></a>
+<a href='https://postimages.org/' target='_blank'><img src='https://i.postimg.cc/s2mPhSNH/4.jpg' border='0' height="400px" alt='4'/></a>
