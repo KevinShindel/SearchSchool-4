@@ -147,6 +147,8 @@ def upload():
         data = json.load(f)
     created, _ = bulk(client=api, index=index, actions=data)
 ````
+### Uploaded data in ELK index
+<a href='https://postimages.org/' target='_blank'><img src='https://i.postimg.cc/sXnTcwpQ/data.jpg' border='0' alt='data' height="400px" width="auto"/></a>
 
 ### Search Console implementation
 ````python
