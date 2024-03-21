@@ -16,48 +16,49 @@ def _create_api() -> Elasticsearch:
 
 
 def make_search(api: Elasticsearch, args) -> List[dict]:
-    if args.dsl_query_type == 'match_all':
-        request = api.search(index=args.index, body={"query": {"match_all": {}}})
-        result = request.get('hits', {}).get('hits', [{}])
+    match args.dsl_query_type:
+        case 'match_all':
+            request = api.search(index=args.index, body={"query": {"match_all": {}}})
+            result = request.get('hits', {}).get('hits', [{}])
 
-    elif args.dsl_query_type == 'query_match':
-        request = api.search(index=args.index,
-                             body={"query": {"match": {args.dsl_field: {"query": args.dsl_query_body}}}})
-        result = request.get('hits', {}).get('hits', [{}])
+        case 'query_match':
+            request = api.search(index=args.index,
+                                 body={"query": {"match": {args.dsl_field: {"query": args.dsl_query_body}}}})
+            result = request.get('hits', {}).get('hits', [{}])
 
-    elif args.dsl_query_type == 'match_phrase':
-        request = api.search(index=args.index,
-                             body={"query": {"match_phrase": {"query": args.dsl_query_body}}})
-        result = request.get('hits', {}).get('hits', [{}])
+        case 'match_phrase':
+            request = api.search(index=args.index,
+                                 body={"query": {"match_phrase": {"query": args.dsl_query_body}}})
+            result = request.get('hits', {}).get('hits', [{}])
 
-    elif args.dsl_query_type == 'query_string':
-        request = api.search(index=args.index,
-                             body={"query": {"query_string": {
-                                 "query": args.dsl_query_body,
-                                 "default_field": args.dsl_field}}
-                             })
-        result = request.get('hits', {}).get('hits', [{}])
+        case 'query_string':
+            request = api.search(index=args.index,
+                                 body={"query": {"query_string": {
+                                     "query": args.dsl_query_body,
+                                     "default_field": args.dsl_field}}
+                                 })
+            result = request.get('hits', {}).get('hits', [{}])
 
-    elif args.dsl_query_type == 'fuzzy':
-        request = api.search(index=args.index,
-                             body={"query": {"fuzzy": {
-                                 args.dsl_field: {
-                                     "value": args.dsl_query_body
-                                 }}}
-                             })
-        result = request.get('hits', {}).get('hits', [{}])
-
-    elif args.dsl_query_type == 'minimum_match':
-        request = api.search(index=args.index,
-                             body={"query": {
-                                 "match": {
+        case 'fuzzy':
+            request = api.search(index=args.index,
+                                 body={"query": {"fuzzy": {
                                      args.dsl_field: {
-                                         "query": args.dsl_query_body,
-                                         "minimum_should_match": args.dsl_min_match_number
-                                     }}}})
-        result = request.get('hits', {}).get('hits', [{}])
-    else:
-        result = [{}]
+                                         "value": args.dsl_query_body
+                                     }}}
+                                 })
+            result = request.get('hits', {}).get('hits', [{}])
+
+        case 'minimum_match':
+            request = api.search(index=args.index,
+                                 body={"query": {
+                                     "match": {
+                                         args.dsl_field: {
+                                             "query": args.dsl_query_body,
+                                             "minimum_should_match": args.dsl_min_match_number
+                                         }}}})
+            result = request.get('hits', {}).get('hits', [{}])
+        case _:
+            result = [{}]
 
     return result
 

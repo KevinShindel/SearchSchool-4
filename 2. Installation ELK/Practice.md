@@ -265,8 +265,7 @@ POST /kibana_sample_data_flights/_search
 <a href="https://postimg.cc/MMJ43fXf" target="_blank"><img src="https://i.postimg.cc/rmDkmSkj/9.jpg" alt="9"/></a><br/><br/>
 <a href="https://postimg.cc/7G1RFPTs" target="_blank"><img src="https://i.postimg.cc/Y9Twmh2H/10.jpg" alt="10"/></a><br/><br/>
 
-````text
-POST /
+````json
 {
     "size": 0,
     "query": {

@@ -7,5 +7,4 @@ In this module, you will learn about hierarchical documents and how to work with
 - Nested objects
 - Parent-child
 - Application side join
-- Denormalisation
-- 
+- De-normalisation
